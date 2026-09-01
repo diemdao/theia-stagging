@@ -20,9 +20,14 @@
   --color-success: #22c55e;
   --color-highlight: #ffe500;
 
+  /* tab bar */
+  --color-glass: rgba(255, 255, 255, 0.6);
+  --color-indicator: rgba(0, 0, 0, 0.08);
+
   /* radii */
   --radius-card: 14px;
   --radius-pill: 999px;
+  --radius-indicator: 24px;
 
   --color-brand: #43cf1d;
 }
