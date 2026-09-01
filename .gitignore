@@ -42,3 +42,9 @@ app-example
 # generated native folders
 /ios
 /android
+
+.claude/
+
+.vscode/
+.agents/
+skills-lock.json
