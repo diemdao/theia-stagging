@@ -75,3 +75,14 @@ Two things to know before adding styles:
   component it returns — `styled()` does not register the original.
 - **Opacity modifiers such as `bg-black/10` render as nothing.** Use an inline
   `rgba()` style, or add a token to `global.css`.
+
+### Light only, for now
+
+`app.json` sets `userInterfaceStyle` to `light`, which is deliberate. The
+palette in `global.css` has only light tokens, and the tab bar's glass is a
+white wash over a `tint="light"` blur, so honouring the system's dark
+appearance today would just render the light bar against dark content.
+
+Dark mode is deferred until the palette is settled. Picking it up means adding
+dark values for the tokens, making the blur tint follow the scheme, and setting
+`userInterfaceStyle` back to `automatic` — not before.
