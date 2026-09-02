@@ -1,6 +1,7 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
-import { Sparkle } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Sparkles } from 'lucide-react-native';
 import { styled } from 'nativewind';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View, type LayoutRectangle } from 'react-native';
@@ -21,6 +22,7 @@ import { useTabBarCollapse } from './TabBarScroll';
 // components imported from react-native.
 const BlurSurface = styled(BlurView);
 const AnimatedView = styled(Animated.View);
+const GradientSurface = styled(LinearGradient);
 
 const ACTIVE = '#1a1a1b';
 const INACTIVE = '#7a7a7e';
@@ -286,24 +288,34 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
       {ai && (
         <Pressable
-          onPress={() => {
+            onPress={() => {
             const event = navigation.emit({
-              type: 'tabPress',
-              target: ai.key,
-              canPreventDefault: true,
+                type: 'tabPress',
+                target: ai.key,
+                canPreventDefault: true,
             });
             if (!aiFocused && !event.defaultPrevented) {
-              navigation.navigate(ai.name);
+                navigation.navigate(ai.name);
             }
-          }}
-          accessibilityRole="button"
-          accessibilityState={{ selected: aiFocused }}
-          accessibilityLabel="AI assistant"
-          className="h-16 w-16 items-center justify-center rounded-full bg-brand"
-        >
-          <Sparkle size={26} color="#ffffff" fill="#ffffff" />
-        </Pressable>
-      )}
+            }}
+            accessibilityRole="button"
+            accessibilityState={{ selected: aiFocused }}
+            accessibilityLabel="AI assistant"
+            className="h-16 w-16 overflow-hidden rounded-full border-4 border-glass"
+            >
+            <GradientSurface
+                colors={['#4DBCF5', '#6885D4', '#E64DD3', '#FF4DB9', '#F79340']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                // style={{ opacity: 0.9 + 0.91 * (aiFocused ? 1 : 0) }}
+                className="h-full w-full items-center justify-center rounded-full"
+            >
+                {/* <View style={{ transform: [{ scaleX: 1 }] }}> */}
+                    <Sparkles size={28} color="#ffffff" fill="#ffffff" strokeWidth={2} />
+                {/* </View> */}
+            </GradientSurface>
+            </Pressable>
+        )}
     </View>
   );
 }
