@@ -1,50 +1,88 @@
-# Welcome to your Expo app 👋
+# Theia
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Vision board to action.
 
-## Get started
+You start with a vision board — the life you're actually aiming at. Theia breaks
+that down into goals, goals into habits, and habits into time on a calendar, so
+the thing on the board turns into something you do this week. The overview pulls
+back out again: a bird's-eye view of where you stand across the areas of your
+life, so you can see which ones you're feeding and which ones you've quietly
+dropped.
 
-1. Install dependencies
+Goals, habits, and the calendar are the mechanism. The board is the point.
 
-   ```bash
-   npm install
-   ```
+Sharing boards with friends is planned.
 
-2. Start the app
+## Status
 
-   ```bash
-   npx expo start
-   ```
+Early. The navigation shell is built — the floating tab bar, its collapse-on-
+scroll behavior, and the five routes — and most screens are still placeholders.
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Running it
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Then open the app on a device with Expo Go, in an
+[iOS simulator](https://docs.expo.dev/workflow/ios-simulator/), in an
+[Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/), or
+in the browser with `npm run web`.
 
-## Learn more
+Other scripts: `npm run ios`, `npm run android`, `npm run lint`.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Layout
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+app/                 Routes. File-based, so the tree is the navigation.
+  _layout.tsx        Root layout.
+  (tabs)/
+    _layout.tsx      Tab navigator. Registers screens and their icons,
+                     and wraps everything in TabBarScrollProvider.
+    index.tsx        Goals
+    habits.tsx       Habits
+    calendar.tsx     Calendar
+    overview.tsx     Overview
+    assistant.tsx    Assistant
 
-## Join the community
+components/
+  TabBar.tsx         The floating bar: blurred pill, gesture-draggable
+                     indicator, collapse animation, gradient AI button.
+  TabBarScroll.tsx   The scroll side of that bar. Owns the collapse state,
+                     the scroll handler screens attach to, the registry
+                     used for scroll-to-top, and the ScreenScroll wrapper.
+  TabIcon.tsx        Icon with the animated highlight lozenge.
 
-Join our community of developers creating universal apps.
+assets/              Images. App icons live in assets/expo-image/.
+global.css           The design tokens, in a Tailwind 4 @theme block.
+app.json             Expo config.
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Styling
+
+[NativeWind](https://www.nativewind.dev) v5 with Tailwind 4. There is no
+`tailwind.config.js` — colors and radii are CSS custom properties in the
+`@theme` block in `global.css`, which is what generates utilities like
+`bg-glass` and `rounded-indicator`.
+
+Two things to know before adding styles:
+
+- **`className` only works on components imported from `react-native`.**
+  NativeWind's babel pass rewrites those imports and nothing else, so
+  `className` on `Animated.View`, `BlurView`, or `LinearGradient` is silently
+  dropped. Wrap them with `styled()` from `nativewind` and render the
+  component it returns — `styled()` does not register the original.
+- **Opacity modifiers such as `bg-black/10` render as nothing.** Use an inline
+  `rgba()` style, or add a token to `global.css`.
+
+### Light only, for now
+
+`app.json` sets `userInterfaceStyle` to `light`, which is deliberate. The
+palette in `global.css` has only light tokens, and the tab bar's glass is a
+white wash over a `tint="light"` blur, so honouring the system's dark
+appearance today would just render the light bar against dark content.
+
+Dark mode is deferred until the palette is settled. Picking it up means adding
+dark values for the tokens, making the blur tint follow the scheme, and setting
+`userInterfaceStyle` back to `automatic` — not before.

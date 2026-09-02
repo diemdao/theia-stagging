@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Theia-stagging",
-    "slug": "Theia-stagging",
+    "name": "Theia",
+    "slug": "theia",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/expo-image/icon.png",
-    "scheme": "theiastagging",
-    "userInterfaceStyle": "automatic",
+    "scheme": "theia",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true

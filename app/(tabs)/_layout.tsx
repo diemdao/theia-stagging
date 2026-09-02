@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
 import {
-    Calendar as CalendarIcon,
-    LayoutGrid,
-    Repeat,
-    Target
+  Calendar as CalendarIcon,
+  LayoutGrid,
+  Repeat,
+  Target,
 } from 'lucide-react-native';
 import { TabBar } from '../../components/TabBar';
 import { TabBarScrollProvider } from '../../components/TabBarScroll';
@@ -13,14 +13,13 @@ type IconProps = { size: number; color: string };
 
 const makeIcon =
   (Icon: (props: IconProps) => React.ReactNode) =>
-  ({ focused, color }: { focused: boolean; color: string }) =>
-    (
-      <TabIcon
-        focused={focused}
-        color={color}
-        icon={({ size }) => <Icon size={size} color={color} />}
-      />
-    );
+  ({ focused, color }: { focused: boolean; color: string }) => (
+    <TabIcon
+      focused={focused}
+      color={color}
+      icon={({ size }) => <Icon size={size} color={color} />}
+    />
+  );
 
 export default function TabLayout() {
   return (
@@ -48,7 +47,6 @@ export default function TabLayout() {
           name="overview"
           options={{ title: 'Overview', tabBarIcon: makeIcon(LayoutGrid) }}
         />
-
       </Tabs>
     </TabBarScrollProvider>
   );
