@@ -11,7 +11,7 @@ export default function Goals() {
       {[0, 1, 2, 3,4,5,6].map((i) => (
         <Image
           key={i}
-          source={require('../../assets/images/test/test-reddit.png')}
+          source={require('../../assets/images/placeholder.png')}
           className="mb-4 h-96 w-full"
           resizeMode="cover"
         />
