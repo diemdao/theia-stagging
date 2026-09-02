@@ -7,6 +7,7 @@ import {
     Target,
 } from 'lucide-react-native';
 import { TabBar } from '../../components/TabBar';
+import { TabBarScrollProvider } from '../../components/TabBarScroll';
 import { TabIcon } from '../../components/TabIcon';
 
 type IconProps = { size: number; color: string };
@@ -24,33 +25,35 @@ const makeIcon =
 
 export default function TabLayout() {
   return (
-    <Tabs
-      tabBar={(props) => <TabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-        tabBarHideOnKeyboard: true,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{ title: 'Goals', tabBarIcon: makeIcon(Target) }}
-      />
-      <Tabs.Screen
-        name="habits"
-        options={{ title: 'Habits', tabBarIcon: makeIcon(Repeat) }}
-      />
-      <Tabs.Screen
-        name="calendar"
-        options={{ title: 'Calendar', tabBarIcon: makeIcon(CalendarIcon) }}
-      />
-      <Tabs.Screen
-        name="overview"
-        options={{ title: 'Overview', tabBarIcon: makeIcon(LayoutGrid) }}
-      />
-      <Tabs.Screen
-        name="assistant"
-        options={{ title: 'Assistant', tabBarIcon: makeIcon(Sparkles) }}
-      />
-    </Tabs>
+    <TabBarScrollProvider>
+      <Tabs
+        tabBar={(props) => <TabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          tabBarHideOnKeyboard: true,
+        }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{ title: 'Goals', tabBarIcon: makeIcon(Target) }}
+        />
+        <Tabs.Screen
+          name="habits"
+          options={{ title: 'Habits', tabBarIcon: makeIcon(Repeat) }}
+        />
+        <Tabs.Screen
+          name="calendar"
+          options={{ title: 'Calendar', tabBarIcon: makeIcon(CalendarIcon) }}
+        />
+        <Tabs.Screen
+          name="overview"
+          options={{ title: 'Overview', tabBarIcon: makeIcon(LayoutGrid) }}
+        />
+        <Tabs.Screen
+          name="assistant"
+          options={{ title: 'Assistant', tabBarIcon: makeIcon(Sparkles) }}
+        />
+      </Tabs>
+    </TabBarScrollProvider>
   );
 }
