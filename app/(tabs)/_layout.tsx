@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
 import {
   Calendar as CalendarIcon,
-  LayoutGrid,
   Repeat,
   Target,
+  UserStar,
 } from 'lucide-react-native';
 import { TabBar } from '../../components/TabBar';
 import { TabBarScrollProvider } from '../../components/TabBarScroll';
@@ -44,8 +44,8 @@ export default function TabLayout() {
           options={{ title: 'Calendar', tabBarIcon: makeIcon(CalendarIcon) }}
         />
         <Tabs.Screen
-          name="overview"
-          options={{ title: 'Overview', tabBarIcon: makeIcon(LayoutGrid) }}
+          name="you"
+          options={{ title: 'You', tabBarIcon: makeIcon(UserStar) }}
         />
       </Tabs>
     </TabBarScrollProvider>
