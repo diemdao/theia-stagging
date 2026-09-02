@@ -1,16 +1,14 @@
-import { Image, ScrollView, Text } from 'react-native';
+import { Image, Text } from 'react-native';
+import { ScreenScroll } from '../../components/TabBarScroll';
 
 export default function Goals() {
   return (
-    <ScrollView
-      className="flex-1 bg-bg"
-      contentContainerStyle={{ paddingBottom: 140 }}
-    >
+    <ScreenScroll className="flex-1 bg-bg">
       <Text className="px-4 pt-16 pb-4 text-2xl font-semibold text-ink">
         Goals
       </Text>
 
-      {[0, 1, 2, 3].map((i) => (
+      {[0, 1, 2, 3,4,5,6].map((i) => (
         <Image
           key={i}
           source={require('../../assets/images/test/test-reddit.png')}
@@ -18,6 +16,6 @@ export default function Goals() {
           resizeMode="cover"
         />
       ))}
-    </ScrollView>
+    </ScreenScroll>
   );
 }
