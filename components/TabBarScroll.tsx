@@ -8,14 +8,20 @@ import {
   type ReactNode,
 } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
+import { SCREEN_BOTTOM_PADDING } from './tabBarMetrics';
 
+// Collapsing follows a scroll, so it can afford to be unhurried. Expanding
+// answers a press, and a direct response should feel quicker than a
+// consequence - hence the deliberate asymmetry.
 export const COLLAPSE_DURATION = 400;
+export const EXPAND_DURATION = 220;
 
 type ScrollRef = React.RefObject<React.ComponentRef<
   typeof Animated.ScrollView
@@ -71,7 +77,9 @@ export function TabBarScrollProvider({ children }: { children: ReactNode }) {
 export function useTabBarCollapse() {
   const v = useContext(Ctx);
   if (!v) {
-    throw new Error('useTabBarCollapse must be used inside TabBarScrollProvider');
+    throw new Error(
+      'useTabBarCollapse must be used inside TabBarScrollProvider',
+    );
   }
   return v;
 }
@@ -114,6 +122,7 @@ export function ScreenScroll({
 }: ScreenScrollProps) {
   const onScroll = useTabBarScroll();
   const { registerScroll } = useTabBarCollapse();
+  const insets = useSafeAreaInsets();
   const ref = useRef<React.ComponentRef<typeof Animated.ScrollView>>(null);
 
   // Registering on focus (and unregistering on blur or unmount) means the
@@ -131,7 +140,11 @@ export function ScreenScroll({
         scrollEventThrottle={16}
         style={{ flex: 1 }}
         // Clears the floating bar so the last row isn't stuck underneath it.
-        contentContainerStyle={[{ paddingBottom: 140 }, contentContainerStyle]}
+        // The bar is pushed up by the safe-area inset, so that comes on top.
+        contentContainerStyle={[
+          { paddingBottom: SCREEN_BOTTOM_PADDING + insets.bottom },
+          contentContainerStyle,
+        ]}
         {...rest}
       >
         {children}

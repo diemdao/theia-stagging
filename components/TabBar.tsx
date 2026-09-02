@@ -4,18 +4,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Sparkles } from 'lucide-react-native';
 import { styled } from 'nativewind';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, View, type LayoutRectangle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-    runOnJS,
-    useAnimatedReaction,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-    withTiming,
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
-import { useTabBarCollapse } from './TabBarScroll';
+import { EXPAND_DURATION, useTabBarCollapse } from './TabBarScroll';
 
 // styled() RETURNS a wrapped component - it does not register the original, so
 // these wrappers are what has to be rendered. className on a bare BlurView or
@@ -25,6 +25,13 @@ const BlurSurface = styled(BlurView);
 const AnimatedView = styled(Animated.View);
 const GradientSurface = styled(LinearGradient);
 
+type TabRoute = BottomTabBarProps['state']['routes'][number];
+
+// Mirrors --color-ink / --color-muted in global.css, which carries a note back
+// to here. Only the icon needs these: `color` is a prop on an SVG component,
+// not a style, so no class can reach it, and NativeWind's one JS-side reader
+// for theme tokens (useUnstableNativeVariable) throws on web. The label beside
+// the icon is plain text, so it uses the classes directly.
 const ACTIVE = '#1a1a1b';
 const INACTIVE = '#7a7a7e';
 
@@ -52,7 +59,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   // scroll handler honest about which way the bar should move next.
   const expand = () => {
     intent.value = 0;
-    collapsed.value = withTiming(0, { duration: 220 });
+    collapsed.value = withTiming(0, { duration: EXPAND_DURATION });
   };
 
   // The gesture runs on the UI thread and can't read React state, so the
@@ -101,59 +108,74 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     w.value = withSpring(activeLayout.width, W_SPRING);
   }, [activeLayout, x, w, shown]);
 
-  // Navigation has to happen back on the JS thread.
-  const goToIndex = (i: number) => {
-    const route = tabs[i];
-    if (!route || route.key === activeKey) return;
-    const event = navigation.emit({
-      type: 'tabPress',
-      target: route.key,
-      canPreventDefault: true,
-    });
-    if (!event.defaultPrevented) {
-      navigation.navigate(route.name);
-    }
-  };
-
-  const pan = Gesture.Pan()
-    // Nothing to drag between when only the active tab is showing.
-    .enabled(!isCollapsed)
-    // Only take over once the finger has clearly moved sideways, so taps
-    // still reach the Pressables underneath.
-    .activeOffsetX([-8, 8])
-    .failOffsetY([-12, 12])
-    .onBegin(() => {
-      dragStart.value = x.value;
-    })
-    .onUpdate((e) => {
-      const list = slots.value;
-      if (list.length === 0) return;
-      const min = list[0].x;
-      const last = list[list.length - 1];
-      const max = last.x + last.width - w.value;
-      const next = dragStart.value + e.translationX;
-      x.value = Math.min(Math.max(next, min), max);
-    })
-    .onEnd(() => {
-      const list = slots.value;
-      if (list.length === 0) return;
-
-      // Snap to whichever slot's centre is closest to the pill's centre.
-      const centre = x.value + w.value / 2;
-      let best = 0;
-      let bestDist = Infinity;
-      for (let i = 0; i < list.length; i++) {
-        const d = Math.abs(list[i].x + list[i].width / 2 - centre);
-        if (d < bestDist) {
-          bestDist = d;
-          best = i;
-        }
+  // The one place a tab is actually entered, whether by tap or by drag.
+  const selectRoute = useCallback(
+    (route: TabRoute) => {
+      const event = navigation.emit({
+        type: 'tabPress',
+        target: route.key,
+        canPreventDefault: true,
+      });
+      if (!event.defaultPrevented) {
+        navigation.navigate(route.name);
       }
+    },
+    [navigation],
+  );
 
-      x.value = withSpring(list[best].x, X_SPRING);
-      w.value = withSpring(list[best].width, W_SPRING);
-      runOnJS(goToIndex)(best);
-    });
+  // Navigation has to happen back on the JS thread.
+  const goToIndex = useCallback(
+    (i: number) => {
+      const route = tabs[i];
+      if (!route || route.key === activeKey) return;
+      selectRoute(route);
+    },
+    [tabs, activeKey, selectRoute],
+  );
+
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        // Nothing to drag between when only the active tab is showing.
+        .enabled(!isCollapsed)
+        // Only take over once the finger has clearly moved sideways, so taps
+        // still reach the Pressables underneath.
+        .activeOffsetX([-8, 8])
+        .failOffsetY([-12, 12])
+        .onBegin(() => {
+          dragStart.value = x.value;
+        })
+        .onUpdate((e) => {
+          const list = slots.value;
+          if (list.length === 0) return;
+          const min = list[0].x;
+          const last = list[list.length - 1];
+          const max = last.x + last.width - w.value;
+          const next = dragStart.value + e.translationX;
+          x.value = Math.min(Math.max(next, min), max);
+        })
+        .onEnd(() => {
+          const list = slots.value;
+          if (list.length === 0) return;
+
+          // Snap to whichever slot's centre is closest to the pill's centre.
+          const centre = x.value + w.value / 2;
+          let best = 0;
+          let bestDist = Infinity;
+          for (let i = 0; i < list.length; i++) {
+            const d = Math.abs(list[i].x + list[i].width / 2 - centre);
+            if (d < bestDist) {
+              bestDist = d;
+              best = i;
+            }
+          }
+
+          x.value = withSpring(list[best].x, X_SPRING);
+          w.value = withSpring(list[best].width, W_SPRING);
+          runOnJS(goToIndex)(best);
+        }),
+    [isCollapsed, goToIndex, dragStart, slots, w, x],
+  );
 
   const pillStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: x.value }],
@@ -173,7 +195,8 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   // they are clipped by the bar instead, which is what keeps the active tab
   // the same size throughout.
   const trackStyle = useAnimatedStyle(() => ({
-    width: fullWidth.value === 0 ? ('100%' as const) : fullWidth.value - EDGE * 2,
+    width:
+      fullWidth.value === 0 ? ('100%' as const) : fullWidth.value - EDGE * 2,
   }));
 
   // Slides the active tab to the bar's left edge as it closes. Without this,
@@ -219,16 +242,19 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
                   {tabs.map((route) => {
                     const { options } = descriptors[route.key];
-                    const focused = state.routes[state.index]?.key === route.key;
+                    const focused =
+                      state.routes[state.index]?.key === route.key;
                     const label = options.title ?? route.name;
-                    const color = focused ? ACTIVE : INACTIVE;
+                    const iconColor = focused ? ACTIVE : INACTIVE;
 
                     return (
                       <Pressable
                         key={route.key}
                         // Faded-out tabs sit outside the collapsed bar, but
                         // stay hit-testable until this says otherwise.
-                        pointerEvents={isCollapsed && !focused ? 'none' : 'auto'}
+                        pointerEvents={
+                          isCollapsed && !focused ? 'none' : 'auto'
+                        }
                         onPress={() => {
                           // Collapsed, the only tab on screen is the active
                           // one, so a tap means "open the bar", not "navigate".
@@ -242,17 +268,15 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                             scrollToTop();
                             return;
                           }
-                          const event = navigation.emit({
-                            type: 'tabPress',
-                            target: route.key,
-                            canPreventDefault: true,
-                          });
-                          if (!event.defaultPrevented) {
-                            navigation.navigate(route.name);
-                          }
+                          selectRoute(route);
                         }}
                         onLayout={(e) => {
-                          const { x: lx, y, width, height } = e.nativeEvent.layout;
+                          const {
+                            x: lx,
+                            y,
+                            width,
+                            height,
+                          } = e.nativeEvent.layout;
                           setLayouts((prev) => ({
                             ...prev,
                             [route.key]: { x: lx, y, width, height },
@@ -267,11 +291,14 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                           style={focused ? undefined : othersStyle}
                           className="items-center gap-1"
                         >
-                          {options.tabBarIcon?.({ focused, color, size: 21 })}
+                          {options.tabBarIcon?.({
+                            focused,
+                            color: iconColor,
+                            size: 21,
+                          })}
                           <Text
                             numberOfLines={1}
-                            style={{ color }}
-                            className={`text-xs ${focused ? 'font-semibold' : ''}`}
+                            className={`text-xs ${focused ? 'font-semibold text-ink' : 'text-muted'}`}
                           >
                             {label}
                           </Text>

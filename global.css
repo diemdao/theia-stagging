@@ -12,6 +12,8 @@
   --color-line: #e3e3e5;
 
   /* text */
+  /* Also hardcoded as ACTIVE / INACTIVE in components/TabBar.tsx, for the
+     icon `color` prop, which no class can reach. Change both together. */
   --color-ink: #1a1a1b;
   --color-muted: #7a7a7e;
 
