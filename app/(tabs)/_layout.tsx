@@ -3,8 +3,7 @@ import {
     Calendar as CalendarIcon,
     LayoutGrid,
     Repeat,
-    Sparkles,
-    Target,
+    Target
 } from 'lucide-react-native';
 import { TabBar } from '../../components/TabBar';
 import { TabBarScrollProvider } from '../../components/TabBarScroll';
@@ -49,10 +48,7 @@ export default function TabLayout() {
           name="overview"
           options={{ title: 'Overview', tabBarIcon: makeIcon(LayoutGrid) }}
         />
-        <Tabs.Screen
-          name="assistant"
-          options={{ title: 'Assistant', tabBarIcon: makeIcon(Sparkles) }}
-        />
+
       </Tabs>
     </TabBarScrollProvider>
   );

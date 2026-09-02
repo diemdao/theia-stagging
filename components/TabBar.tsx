@@ -1,6 +1,7 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { Sparkles } from 'lucide-react-native';
 import { styled } from 'nativewind';
 import { useEffect, useRef, useState } from 'react';
@@ -37,6 +38,7 @@ const EDGE = 1;
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const [layouts, setLayouts] = useState<Record<string, LayoutRectangle>>({});
   const measured = useRef(false);
+  const router = useRouter();
 
   const x = useSharedValue(0);
   const w = useSharedValue(0);
@@ -67,9 +69,9 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     },
   );
 
-  const tabs = state.routes.filter((r) => r.name !== 'assistant');
-  const ai = state.routes.find((r) => r.name === 'assistant');
-  const aiFocused = state.routes[state.index]?.name === 'assistant';
+  // The assistant is a root-level modal now, not a tab, so every route here
+  // is a real tab.
+  const tabs = state.routes;
 
   const activeKey = state.routes[state.index]?.key;
   const activeLayout = activeKey ? layouts[activeKey] : undefined;
@@ -226,9 +228,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                         key={route.key}
                         // Faded-out tabs sit outside the collapsed bar, but
                         // stay hit-testable until this says otherwise.
-                        pointerEvents={
-                          isCollapsed && !focused ? 'none' : 'auto'
-                        }
+                        pointerEvents={isCollapsed && !focused ? 'none' : 'auto'}
                         onPress={() => {
                           // Collapsed, the only tab on screen is the active
                           // one, so a tap means "open the bar", not "navigate".
@@ -286,36 +286,23 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         </AnimatedView>
       </View>
 
-      {ai && (
-        <Pressable
-            onPress={() => {
-            const event = navigation.emit({
-                type: 'tabPress',
-                target: ai.key,
-                canPreventDefault: true,
-            });
-            if (!aiFocused && !event.defaultPrevented) {
-                navigation.navigate(ai.name);
-            }
-            }}
-            accessibilityRole="button"
-            accessibilityState={{ selected: aiFocused }}
-            accessibilityLabel="AI assistant"
-            className="h-16 w-16 overflow-hidden rounded-full border-4 border-glass"
-            >
-            <GradientSurface
-                colors={['#4DBCF5', '#6885D4', '#E64DD3', '#FF4DB9', '#F79340']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                // style={{ opacity: 0.9 + 0.91 * (aiFocused ? 1 : 0) }}
-                className="h-full w-full items-center justify-center rounded-full"
-            >
-                {/* <View style={{ transform: [{ scaleX: 1 }] }}> */}
-                    <Sparkles size={28} color="#ffffff" fill="#ffffff" strokeWidth={2} />
-                {/* </View> */}
-            </GradientSurface>
-            </Pressable>
-        )}
+      {/* Opens the assistant as a root-level modal over whatever screen you
+          are on, so it can act on that context and dismiss back to it. */}
+      <Pressable
+        onPress={() => router.push('/assistant')}
+        accessibilityRole="button"
+        accessibilityLabel="AI assistant"
+        className="h-16 w-16 overflow-hidden rounded-full border-4 border-glass"
+      >
+        <GradientSurface
+          colors={['#4DBCF5', '#6885D4', '#E64DD3', '#FF4DB9', '#F79340']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          className="h-full w-full items-center justify-center rounded-full"
+        >
+          <Sparkles size={28} color="#ffffff" fill="#ffffff" strokeWidth={2} />
+        </GradientSurface>
+      </Pressable>
     </View>
   );
 }
