@@ -13,9 +13,12 @@
 
   /* text */
   /* Also hardcoded as ACTIVE / INACTIVE in components/TabBar.tsx, for the
-     icon `color` prop, which no class can reach. Change both together. */
+     icon `color` prop, which no class can reach. Change both together.
+     --color-muted carries tab labels at 12px, so it has to clear WCAG AA
+     (4.5:1) on --color-bg. #6e6e73 is 5.07:1; the old #7a7a7e was 4.27:1
+     and failed. Do not lighten it without re-checking. */
   --color-ink: #1a1a1b;
-  --color-muted: #7a7a7e;
+  --color-muted: #6e6e73;
 
   /* accents */
   --color-accent: #2b33d9;

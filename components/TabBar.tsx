@@ -32,8 +32,11 @@ type TabRoute = BottomTabBarProps['state']['routes'][number];
 // not a style, so no class can reach it, and NativeWind's one JS-side reader
 // for theme tokens (useUnstableNativeVariable) throws on web. The label beside
 // the icon is plain text, so it uses the classes directly.
+//
+// INACTIVE must clear WCAG AA (4.5:1) against --color-bg: it colours 12px tab
+// labels. #6e6e73 is 5.07:1. Change it here and in global.css together.
 const ACTIVE = '#1a1a1b';
-const INACTIVE = '#7a7a7e';
+const INACTIVE = '#6e6e73';
 
 const X_SPRING = { damping: 22, stiffness: 160, mass: 1.1 };
 const W_SPRING = { damping: 14, stiffness: 110, mass: 1.2 };
